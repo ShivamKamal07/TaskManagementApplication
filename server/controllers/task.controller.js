@@ -25,22 +25,48 @@ export const createTask = async (req, res) => {
   }
 };
 
-// get all task for only login users
-
+// get task which is filter and search
 export const getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find({ user: req.user._id })
-      .sort({ createdAt: -1 });
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.min(parseInt(req.query.limit) || 5, 20);
+    const status = req.query.status;
+    const search = req.query.search;
+
+    const query = {
+      user: req.user._id
+    };
+ 
+    if (status) {
+      query.status = status;
+    }
+
+    if (search) {
+      query.title = {
+        $regex: search,
+        $options: "i"
+      };
+    }
+
+    const total = await Task.countDocuments(query);
+
+    const tasks = await Task.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
 
     res.status(200).json({
       success: true,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
       data: tasks
     });
 
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Server Error"
+      message: "server error"
     });
   }
 };
