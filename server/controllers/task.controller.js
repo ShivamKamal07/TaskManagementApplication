@@ -1,13 +1,18 @@
 import Task from "../models/task.model.js";
+import { encrypt, decrypt } from "../utils/encryption.js";
 
 // create task
 export const createTask = async (req, res) => {
   try {
     const { title, description, status } = req.body;
 
+        const encryptedDescription = description
+      ? encrypt(description)
+      : "";
+
     const task = await Task.create({
       title,
-      description,
+      description: encryptedDescription,
       status,
       user: req.user._id
     });
@@ -55,19 +60,25 @@ export const getTasks = async (req, res) => {
       .skip((page - 1) * limit)
       .limit(limit);
 
+
+    const decryptedTasks = tasks.map(task => ({
+      ...task.toObject(),
+      description: task.description
+        ? decrypt(task.description)
+        : ""
+    }));
+  
+
     res.status(200).json({
       success: true,
       total,
       page,
       totalPages: Math.ceil(total / limit),
-      data: tasks
+      data: decryptedTasks
     });
 
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "server error"
-    });
+   next(error);
   }
 };
 
