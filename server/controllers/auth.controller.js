@@ -4,11 +4,7 @@ import jwt from "jsonwebtoken";
 
 // generate jwt token
 const generateToken = (id) => {
-  return jwt.sign(
-    { id },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
-  );
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
 // user register
@@ -21,7 +17,7 @@ export const registerUser = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "User already exists!"
+        message: "User already exists!",
       });
     }
 
@@ -31,18 +27,17 @@ export const registerUser = async (req, res) => {
     const user = await User.create({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
     });
 
     res.status(201).json({
       success: true,
-      message: "user registered successfully"
+      message: "user registered successfully",
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "server error"
+      message: "server error",
     });
   }
 };
@@ -56,7 +51,7 @@ export const loginUser = async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "invalid credentials!"
+        message: "invalid credentials!",
       });
     }
 
@@ -64,7 +59,7 @@ export const loginUser = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "invalid credentials"
+        message: "invalid credentials",
       });
     }
 
@@ -73,19 +68,18 @@ export const loginUser = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({
       success: true,
-      message: "login successful."
+      message: "login successful.",
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "server error"
+      message: "server error",
     });
   }
 };
@@ -94,11 +88,11 @@ export const loginUser = async (req, res) => {
 export const logoutUser = (req, res) => {
   res.cookie("token", "", {
     httpOnly: true,
-    expires: new Date(0)
+    expires: new Date(0),
   });
 
   res.status(200).json({
     success: true,
-    message: "logged out successfully"
+    message: "logged out successfully",
   });
 };
