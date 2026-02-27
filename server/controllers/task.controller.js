@@ -31,7 +31,7 @@ export const createTask = async (req, res) => {
 };
 
 // get task which is filter and search
-export const getTasks = async (req, res) => {
+export const getTasks = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = Math.min(parseInt(req.query.limit) || 5, 20);
